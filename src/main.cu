@@ -23,7 +23,7 @@ int quantize(int8_t a, int8_t b) {
     a = abs(a);
     b = abs(b);
 
-    // Transalte 4bit ints to left * right half of 8-bit int
+    // Transalte 4bit ints to left & right half of 8-bit int
     a_val += (a & 7) * 16;
     b_val += b & 7;
 
@@ -57,7 +57,8 @@ int8_t* split_ints(int8_t c, int8_t* split) {
 // Function that takes in an array and quantizes it
 int8_t* quantize_array(int8_t* arr, int8_t* quantized, int size) {
     for (int i = 0; i < size; i += 2) {
-        quantized[i] = quantize(arr[i], arr[i+1]);
+        // append quantized values to out array
+        quantized[int(i / 2)] = quantize(arr[i], arr[i+1]);
     }
     if (size % 2 == 1) {
         quantized[size-1] = quantize(arr[size-1], 0);
@@ -68,13 +69,15 @@ int8_t* quantize_array(int8_t* arr, int8_t* quantized, int size) {
 
 int main() {
     // list of items within quantize range
-    int8_t arr[] = {0, 1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4, -5, -6, -7};
-    int8_t out_arr[sizeof(arr)/sizeof(int8_t)];
-    quantize_array(arr, out_arr, sizeof(arr)/sizeof(int8_t));
+    int8_t arr[] = {0, 1, 2, 3, 4, 5};
+    //  int 8 array half the size of arr (3 items)
+    (int8_t*)malloc
+    quantize_array(arr, out_arr, sizeof(arr)/2);
     printf("Output Array: ");
     for (int i = 0; i < sizeof(arr)/sizeof(int8_t); i++) {
         printf("%d ", out_arr[i]);
     }
+    printf("\n");
 
     // delete[] arr;
     // delete[] out_arr;
