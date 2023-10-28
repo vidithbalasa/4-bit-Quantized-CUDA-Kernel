@@ -54,13 +54,44 @@ int[] split_ints(int x) {
     return [0,0];
 }
 
+int8_t* split_ints(int8_t c, int8_t* split) {
+    /*
+    splits a single byte into two "4-bit" signed integers
+    */
+
+    // Split the byte into two 4-bit signed integers
+    int8_t a = c >> 4;
+    int8_t b = c & 15;
+
+    // Get signed bit (bit 4)
+    int8_t a_sign = a >> 3;
+    int8_t a_val = (1 ** a_sign) * (-1 ** (1 - a_sign));
+    int8_t b_sign = b >> 3;
+    int8_t b_val = 1*b_sign + -1*1 - b_sign;
+
+    // Get value (bits 0-3)
+    a_val += (a & 7);
+    b_val += (b & 7);
+
+    // Add a and b to the list
+    split[0] = a_val;
+    split[1] = b_val;
+
+    return split;
+}
+
+
 int main() {
     int8_t a = 6;
     int8_t b = -7;
     int8_t c = quantize(a, b);
-    printf("c =  %d\n", c);
-    // int[] *split = split_ints(c);
-    // printf("ints = %d, %d\n", split[0], split[1]);
+    // printf("c =  %d\n", c);
+    
+    int8_t* split = new int8_t[2];
+    split = split_ints(c, split);
+    printf("a = %d\n", split[0]);
+    printf("b = %d\n", split[1]);
 
+    delete[] split;
     return 0;
 }
