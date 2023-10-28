@@ -35,27 +35,32 @@ int quantize(int8_t a, int8_t b = 0) {
     return int8_t(a_val + b_val);
 }
 
-int[] split_ints(int8_t x) {
-    int8_t a = x >> 4;
-    int8_t b = x & 15;
+int[] split_ints(int x) {
+    // int8_t a = x >> 4;
+    // int8_t b = x & 15;
 
     // Get signed bit (bit 4)
-    int8_t a_sign = a >> 3;
-    int8_t a_val = (1 ** a_sign) * (-1 ** (1 - a_sign))
-    int8_t b_sign = b >> 3;
-    int8_t b_val = (1 ** b_sign) * (-1 ** (1 - b_sign))
+    // int8_t a_sign = a >> 3;
+    // int8_t a_val = (1 ** a_sign) * (-1 ** (1 - a_sign));
+    // int8_t b_sign = b >> 3;
+    // int8_t b_val = 1*b_sign + -1*1 - b_sign;
 
     // Get value (bits 0-3)
-    a_val += (a & 7);
-    b_val += (b & 7);
+    // a_val += (a & 7);
+    // b_val += (b & 7);
 
-    return [a_val, b_val]
+    // return [a_val, b_val];
+    // return [a, b];
+    return [0,0];
 }
 
 int main() {
     int8_t a = 6;
     int8_t b = -7;
     int8_t c = quantize(a, b);
+    printf("c =  %d\n", c);
+    // int[] *split = split_ints(c);
+    // printf("ints = %d, %d\n", split[0], split[1]);
 
     return 0;
 }
