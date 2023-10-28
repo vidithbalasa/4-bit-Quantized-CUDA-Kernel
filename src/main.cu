@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <cstdlib>
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-int quantize(int a, int b = 0) {
+int quantize(int8_t a, int8_t b = 0) {
     /*
     quantizes a pair of values to fit two 4-bit signed integers into a single byte
     */
@@ -15,26 +16,30 @@ int quantize(int a, int b = 0) {
     }
 
     // Signed Ints: 2^3 & 2^8 ( [0]000[0]000 )
-    int a_val = (a >> 31) & 128;
-    int b_val = (b >> 31) & 8;
+    int a_val = (a >> sizeof(int)-1) & 128;
+    int8_t b_val = (b >> sizeof(int)-1) & 8;
+
+    // Only care about values
+    a = abs(a);
+    b = abs(b);
 
     // Transalte a[4-bit] to left half of 8-bit int
     a_val += (a & 1) * 16;
-    a_val += (a & 2) * 32;
-    a_val += (a & 4) * 64;
+    a_val += (a & 2) * 16;
+    a_val += (a & 4) * 16;
 
     // Transalte b[4-bit] to right half of 8-bit int (last 3 bits)
-    b_val += b & 3;
+    b_val += b & 7;
 
     // Combine a and b into a single byte
-    return a_val + b_val;
+    return int8_t(a_val + b_val);
 }
 
 int main() {
-    int a = 6;
-    int b = -7;
-    int c = quantize(a, b);
-    printf("c = %d\n", c);
+    int8_t a = 6;
+    int8_t b = -7;
+    int8_t c = quantize(a, b);
+    printf("c = %d\n", int(sizeof(c)));
 
     return 0;
 }
