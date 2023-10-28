@@ -69,15 +69,14 @@ int8_t* quantize_array(int8_t* arr, int8_t* quantized, int size) {
 int main() {
     // list of items within quantize range
     int8_t arr[] = {0, 1, 2, 3, 4, 5, 6, 7, -1, -2, -3, -4, -5, -6, -7};
-    int8_t out_arr[len(arr)];
+    int8_t out_arr[sizeof(arr)/sizeof(int8_t)];
+    quantize_array(arr, out_arr, sizeof(arr)/sizeof(int8_t));
     printf("Output Array: ");
-    for (int i = 0; i < len(arr); i++) {
+    for (int i = 0; i < sizeof(arr)/sizeof(int8_t); i++) {
         printf("%d ", out_arr[i]);
     }
 
-    delete[] split;
-    delete[] arr;
-    delete[] quantized;
-    delete[] out_arr;
+    // delete[] arr;
+    // delete[] out_arr;
     return 0;
 }
