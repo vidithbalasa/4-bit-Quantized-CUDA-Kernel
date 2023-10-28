@@ -35,25 +35,6 @@ int quantize(int8_t a, int8_t b = 0) {
     return int8_t(a_val + b_val);
 }
 
-int[] split_ints(int x) {
-    // int8_t a = x >> 4;
-    // int8_t b = x & 15;
-
-    // Get signed bit (bit 4)
-    // int8_t a_sign = a >> 3;
-    // int8_t a_val = (1 ** a_sign) * (-1 ** (1 - a_sign));
-    // int8_t b_sign = b >> 3;
-    // int8_t b_val = 1*b_sign + -1*1 - b_sign;
-
-    // Get value (bits 0-3)
-    // a_val += (a & 7);
-    // b_val += (b & 7);
-
-    // return [a_val, b_val];
-    // return [a, b];
-    return [0,0];
-}
-
 int8_t* split_ints(int8_t c, int8_t* split) {
     /*
     splits a single byte into two "4-bit" signed integers
@@ -65,17 +46,15 @@ int8_t* split_ints(int8_t c, int8_t* split) {
 
     // Get signed bit (bit 4)
     int8_t a_sign = a >> 3;
-    int8_t a_val = (1 ** a_sign) * (-1 ** (1 - a_sign));
+    int8_t a_multiplier = (1 * (1 - a_sign)) + (-1 * a_sign);
+    printf("a_sign, val = %d, %d\n", a_sign, a_multiplier);
     int8_t b_sign = b >> 3;
-    int8_t b_val = 1*b_sign + -1*1 - b_sign;
+    int8_t b_multiplier = (1 * (1 - b_sign)) + (-1 * b_sign);
+    printf("b_sign, val = %d, %d\n", b_sign, b_multiplier);
 
-    // Get value (bits 0-3)
-    a_val += (a & 7);
-    b_val += (b & 7);
-
-    // Add a and b to the list
-    split[0] = a_val;
-    split[1] = b_val;
+    // Add a/b values with sign bit
+    split[0] = (a & 7) * a_multiplier;
+    split[1] = (b & 7) * b_multiplier;
 
     return split;
 }
