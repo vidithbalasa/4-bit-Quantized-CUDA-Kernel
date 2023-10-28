@@ -4,15 +4,30 @@
 #include <cuda_runtime.h>
 
 int quantize(int a, int b = 0) {
-    // RANGE(-7 ~ 7) -> (0 ~ 15)
+    /*
+    quantizes a pair of values to fit two 4-bit signed integers into a single byte
+    */
+    
+    // input ints must fit in 4 bits
     if (a > 7 || a < -7 || b > 7 || b < -7) {
         printf("ERROR: quantize out of range\n");
         exit(1);
     }
 
-    a = a + 7;
-    b = b + 7;
-    return (a << 4) + b;
+    // Signed Ints: 2^3 & 2^8 ( [0]000[0]000 )
+    int a_val = (a >> 31) & 128;
+    int b_val = (b >> 31) & 8;
+
+    // Transalte a[4-bit] to left half of 8-bit int
+    a_val += (a & 1) * 16;
+    a_val += (a & 2) * 32;
+    a_val += (a & 4) * 64;
+
+    // Transalte b[4-bit] to right half of 8-bit int (last 3 bits)
+    b_val += b & 3;
+
+    // Combine a and b into a single byte
+    return a_val + b_val;
 }
 
 int main() {
