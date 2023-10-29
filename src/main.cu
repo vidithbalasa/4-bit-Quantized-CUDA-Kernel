@@ -6,9 +6,7 @@
 #define MIN_4BIT -7
 
 __host__ __device__ int8_t quantize(int8_t a, int8_t b) {
-    /*
-    quantizes a pair of values to fit two 4-bit signed integers into a single byte
-    */
+    /* quantizes a pair of values to fit two 4-bit signed integers into a single byte */
     
     if (a > MAX_4BIT || a < MIN_4BIT || b > MAX_4BIT || b < MIN_4BIT) {
         printf("ERROR: Input integers must fit in 4 bits\n");
@@ -32,61 +30,40 @@ __host__ __device__ int8_t quantize(int8_t a, int8_t b) {
     return int8_t(a_val + b_val);
 }
 
-// __global__ void quantize_kernel(int8_t* arr, int8_t* quantized, int8_t size) {
-//     int index = blockIdx.x * blockDim.x + threadIdx.x;
-//     if (index < size-1) {
-//         quantized[index/2] = quantize(arr[index], arr[index+1]);
-//     }
-//     if (size % 2 == 1 && index == size-1) {
-//         quantized[size/2] = quantize(arr[size-1], -0);
-//     }
-// }
-
-__global__ void quantize_kernel(int8_t* arr, int8_t* quantized, int8_t size) {
-    __shared__ int errorFlag;
-    if (threadIdx.x == 0) {
-        errorFlag = 0;
-    }
-    __syncthreads();
-
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (index < size-1) {
-        int8_t q_value = quantize(arr[index], arr[index+1]);
-        if (q_value & 0x80) {
-            atomicAdd(&errorFlag, 1);
-        } else {
-            quantized[index/2] = q_value;
-        }
-    } else if (size % 2 == 1 && index == size-1) {
-        quantized[size/2] = quantize(arr[size-1], 0);
-    }
-
-    __syncthreads();
-
-    // Return if there's an error
-    if (threadIdx.x == 0 && errorFlag) {
-        printf("ERROR: Input integers must fit in 4 bits\n");
+__global__ void quantize_array_kernel(const int8_t* input, int8_t* output, int n) {
+    // Each thread will process two elements, so we calculate the index accordingly
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (2 * idx + 1 < n) { // Make sure we have both elements
+        int8_t a = input[2 * idx];
+        int8_t b = input[2 * idx + 1];
+        output[idx] = quantize(a, b);
     }
 }
 
-void quantize_array(int8_t* arr, int8_t* quantized, int8_t size, int8_t* error) {
-    int8_t* d_arr;
-    int8_t* d_quantized;
+void quantize_array(const int8_t* h_input, int8_t* h_output, int n) {
+    int8_t* d_input;
+    int8_t* d_output;
 
-    cudaMalloc((void**)&d_arr, size * sizeof(int8_t));
-    cudaMalloc((void**)&d_quantized, ((size+1)/2) * sizeof(int8_t));
+    // Allocate device memory
+    cudaMalloc(&d_input, n * sizeof(int8_t));
+    cudaMalloc(&d_output, (n / 2 + n % 2) * sizeof(int8_t));
 
-    cudaMemcpy(d_arr, arr, size * sizeof(int8_t), cudaMemcpyHostToDevice);
+    // Copy input data to device
+    cudaMemcpy(d_input, h_input, n * sizeof(int8_t), cudaMemcpyHostToDevice);
 
-    int threadsPerBlock = 256;
-    int blocksPerGrid = (size + threadsPerBlock - 1) / threadsPerBlock;
-    quantize_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_arr, d_quantized, size);
+    // Define block and grid dimensions
+    const int threadsPerBlock = 256;
+    const int blocksPerGrid = (n + 2 * threadsPerBlock - 1) / (2 * threadsPerBlock);
 
-    cudaMemcpy(quantized, d_quantized, ((size+1)/2) * sizeof(int8_t), cudaMemcpyDeviceToHost);
+    // Launch kernel
+    quantize_array_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output, n);
 
-    cudaFree(d_arr);
-    cudaFree(d_quantized);
+    // Copy result back to host
+    cudaMemcpy(h_output, d_output, (n / 2 + n % 2) * sizeof(int8_t), cudaMemcpyDeviceToHost);
+
+    // Free device memory
+    cudaFree(d_input);
+    cudaFree(d_output);
 }
 
 void quantize_array_cpu(int8_t* arr, int8_t* quantized, int8_t size, int8_t* error) {
@@ -135,34 +112,36 @@ void unquantize_array(int8_t* arr, int8_t* unquantized, int8_t size) {
 int main() {
     int8_t error = 0;
     // Test Quantize
-    int a_len = 1000000;
+    int a_len = 1000;
     int8_t out_len = int(a_len / 2) + (a_len % 2);
 
     // create array of random ints between -7 and 7
-    int8_t arr[a_len];
+    int8_t* arr = (int8_t*)malloc(a_len * sizeof(int8_t));
     for (int i = 0; i < a_len; i++) {
         arr[i] = rand() % 15 - 7;
     }
-    
+
     //  Allocate 3 bytes of memory on host for int8 arrray
     int8_t out_arr[out_len];
-    quantize_array(arr, out_arr, a_len, &error);
+    // quantize_array(arr, out_arr, a_len);
 
     // int8_t unquantized[a_len];
-    // unquantize_array(out_arr, unquantized, out_len);
+    // unquantize_array(out_arr, unquantized, a_len);
+
+    int8_t out_arr_cpu[out_len];
+    quantize_array_cpu(arr, out_arr_cpu, a_len, &error);
 
     // make sure there's no error
     if (error) {
         printf("Error found in main call");
     }
 
-    // // Make sure original array matches output array
-    // for (int i = 0; i < a_len; i++) {
-    //     if (arr[i] != unquantized[i]) {
-    //         printf("ERROR: Original array does not match unquantized array\n");
-    //         return 0;
-    //     }
-    // }
+    // Make sure original array matches output array
+    for (int i = 0; i < out_len; i++) {
+        if (out_arr[i] != out_arr_cpu[i]) {
+            printf("DIFFERS AT: %d != %d\n", out_arr[i], out_arr_cpu[i]);
+        }
+    }
 
     // printf("Quantized Array: ");
     // for (int i = 0; i < out_len; i++) {
@@ -176,5 +155,6 @@ int main() {
     // }
     // printf("\n");
 
+    free(arr);
     return 0;
 }
