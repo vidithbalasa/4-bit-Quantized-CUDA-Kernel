@@ -2,14 +2,14 @@
 #include "../include/quantize_utils.h"
 
 int8_t quantize_cpu(int8_t a, int8_t b) {
-    /* quantizes a pair of values to fit two 4-bit signed integers into a single byte */
+    /* Quantizes a pair of values to fit two 4-bit signed integers into a single byte */
     
     if (a > MAX_4BIT || a < MIN_4BIT || b > MAX_4BIT || b < MIN_4BIT) {
         printf("ERROR: Input integers must fit in 4 bits\n");
         return 0x80; // Set highest bit to indicate error
     }
 
-    // Mask for value of signed ints: 2^3 & 2^8 ( [0]000[0]000 )
+    // Mask for value of signed bits: 2^3 & 2^8 ( [0]000[0]000 )
     int8_t a_val = a & 0x08;
     int8_t b_val = (b >> 4) & 0x08;
 
@@ -19,7 +19,7 @@ int8_t quantize_cpu(int8_t a, int8_t b) {
     int8_t b_mask = b >> 7;
     b = (b ^ b_mask) - b_mask;
 
-    // transalte 4bit ints to left & right half of 8-bit int
+    // Transalte 4bit ints to left & right half of 8-bit int
     a_val += (a & 7) * 16;
     b_val += b & 7;
 
@@ -39,9 +39,9 @@ void quantize_array_cpu(int8_t* arr, int8_t* quantized, int8_t size, int8_t (*qu
 }
 
 void split_ints(int8_t c, int8_t* split) {
-    /* splits a single byte into two "4-bit" signed integers */
+    /* Splits a single byte into two "4-bit" signed integers */
 
-    // split byte
+    // Split byte
     int8_t a = c >> 4;
     int8_t b = c & 15;
 
