@@ -2,7 +2,7 @@
 
 ## Overview
 
-In the realm of CUDA programming and GPU-accelerated computing, efficiency and optimization are paramount. NVIDIA's CUDA ecosystem provides robust support for a wide range of data types and operations, yet it stops short of offering native support for 4-bit quantized integers. This repository introduces a novel approach to bridging this gap, presenting a fully functional, signed 4-bit integer CUDA kernel designed for high-performance computing applications where memory efficiency is crucial.
+NVIDIA's CUDA ecosystem provides robust support for a wide range of data types and operations, yet it stops short of offering native support for 4-bit quantized integers. This repository introduces a novel approach to bridging this gap, presenting a fully functional, signed 4-bit integer CUDA kernel designed for high-performance computing applications where memory efficiency is crucial.
 
 ## Technical Details
 
