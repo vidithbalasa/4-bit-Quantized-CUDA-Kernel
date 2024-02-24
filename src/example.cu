@@ -1,63 +1,57 @@
-#include "kernel.cu"
-#include "quantize_utils.cpp"
+#include <kernel.cuh>
 #include <iostream>
+#include <vector>
+#include <numeric>
+#include <bitset>
+
+void quantize_array(int8_t* h_input, int8_t* h_output, int n) {
+    int8_t* d_input;
+    int8_t* d_output;
+
+    // Allocate device memory
+    cudaMalloc(&d_input, n * sizeof(int8_t));
+    cudaMalloc(&d_output, (n / 2 + n % 2) * sizeof(int8_t));
+
+    // Copy input data to device
+    cudaMemcpy(d_input, h_input, n * sizeof(int8_t), cudaMemcpyHostToDevice);
+
+    // Define block and grid dimensions
+    const int threadsPerBlock = 256;
+    const int blocksPerGrid = (n + 2 * threadsPerBlock - 1) / (2 * threadsPerBlock);
+
+    // Launch kernel
+    // quantize_array_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output, n);
+    quantize_array_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output, n);
+
+    // Copy result back to host
+    cudaMemcpy(h_output, d_output, (n / 2 + n % 2) * sizeof(int8_t), cudaMemcpyDeviceToHost);
+
+    // Free device memory
+    cudaFree(d_input);
+    cudaFree(d_output);
+}
+
+void print_bits(std::vector<int8_t>& nums) {
+    std::cout << "| ";
+    for (int8_t num : nums) {
+        std::bitset<8> bits(num);
+        std::cout << bits.to_string() << " ";
+    }
+    std::cout << std::endl;
+}
 
 int main() {
-    int a_len = 2;
-    int out_len = int(a_len / 2) + (a_len % 2);
+    int size = 6;
+    int half_size = std::ceil(size / 2.0);
+    std::vector<int8_t> nums(size);
+    std::iota(nums.begin(), nums.end(), 0);
+    std::vector<int8_t> quantized_nums(half_size);
 
-    // create array of random ints between -7 and 7
-    int8_t* arr = (int8_t*)malloc(a_len * sizeof(int8_t));
-    // for (int i = 0; i < a_len; i++) {
-    //     arr[i] = rand() % 15 - 7;
-    // }
+    print_bits(nums);
 
-    // Put 0 to 7 in arr
-    // for (int i = 0; i < a_len; i++) {
-    //     arr[i] = -i;
-    // }
+    quantize_array(nums.data(), quantized_nums.data(), size);
 
-    // //  Allocate 3 bytes of memory on host for int8 arrray
-    // int8_t out_arr[out_len];
-    // quantize_array(arr, out_arr, a_len);
+    print_bits(quantized_nums);
 
-    // set array w 2 numbers, -3 and -4
-    arr[0] = -3;
-    arr[1] = -4;
-
-    int8_t out_arr_cpu[out_len];
-    quantize_array_cpu(arr, out_arr_cpu, a_len, quantize);
-    printf("%d\n", out_arr_cpu[0]);
-
-    // int8_t unquantized[a_len];
-    // unquantize_array(out_arr_cpu, unquantized, a_len);
-
-    // // Make sure original array matches output array
-    // for (int i = 0; i < out_len; i++) {
-    //     if (out_arr[i] != out_arr_cpu[i]) {
-    //         printf("DIFFERS AT: %d != %d\n", out_arr[i], out_arr_cpu[i]);
-    //     }
-    //     if (out_arr[i] == 0x80 || out_arr_cpu[i] == 0x80) {
-    //         printf("Error found at %d || Original Value: %d\n", i, arr[i]);
-    //     }
-    // }
-
-    // // Print quantized array
-    // for (int i = 0; i < out_len; i++) {
-    //     printf("%d ", out_arr[i]);
-    // }
-
-    // print quantized -3 & -4
-    // int t = quantize(-3, -4);
-    // printf("\n%d\n", t);
-
-
-    // // Print unquantized array
-    // for (int i = 0; i < a_len; i++) {
-    //     printf("%d ", unquantized[i]);
-    // }
-    // printf("\n");
-
-    free(arr);
     return 0;
 }

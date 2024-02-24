@@ -1,7 +1,7 @@
 #include "../include/kernel.cuh"
 #include <iostream>
 
-__host__ __device__ int8_t quantize(int8_t a, int8_t b) {
+__device__ int8_t quantize(int8_t a, int8_t b) {
     /* Quantizes a pair of values to fit two 4-bit signed integers into a single byte */
     
     if (a > MAX_4BIT || a < MIN_4BIT || b > MAX_4BIT || b < MIN_4BIT) {
@@ -45,6 +45,7 @@ __global__ void quantize_array_kernel(const int8_t* input, int8_t* output, int n
     }
 }
 
+/*
 void quantize_array(const int8_t* h_input, int8_t* h_output, int n) {
     int8_t* d_input;
     int8_t* d_output;
@@ -71,3 +72,4 @@ void quantize_array(const int8_t* h_input, int8_t* h_output, int n) {
     cudaFree(d_input);
     cudaFree(d_output);
 }
+*/
