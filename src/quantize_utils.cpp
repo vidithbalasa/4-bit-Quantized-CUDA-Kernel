@@ -57,7 +57,7 @@ void split_ints(int8_t c, int8_t* split) {
     split[1] = (b & 7) * b_multiplier;
 }
 
-void unquantize_array(int8_t* arr, int8_t* unquantized, int8_t size) {
+void unquantize_array_cpu(int8_t* arr, int8_t* unquantized, int8_t size) {
     int8_t index = 0;
     for (int i = 0; i < size; i++) {
         int8_t split[2];

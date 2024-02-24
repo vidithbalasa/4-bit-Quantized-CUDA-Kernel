@@ -42,7 +42,7 @@ int main() {
 
     std::cout << "\n\nAfter performing any necessary calculations on the 4 bit integers, we can convert them back:\n\t";
 
-    unquantize_array(quantized_nums.data(), nums.data(), half_size);
+    unquantize_array_cpu(quantized_nums.data(), nums.data(), half_size);
 
     print_nums(nums);
 
