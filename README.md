@@ -2,7 +2,7 @@
 
 ## Overview
 
-NVIDIA's CUDA ecosystem provides robust support for a wide range of data types and operations, yet it stops short of offering native support for 4-bit quantized integers. This repository introduces a novel approach to bridging this gap, presenting a fully functional, signed 4-bit integer CUDA kernel designed for high-performance computing applications where memory efficiency is crucial.
+VRAM is expensive. But the rich people making AI keep building bigger models. Since we can't buy more GPUs, we instead make the weights smaller. Presenting the 4 bit kernel. Shrink the model, not your wallet.
 
 ## Technical Details
 
