@@ -20,7 +20,6 @@ void quantize_array(int8_t* h_input, int8_t* h_output, int n) {
     const int blocksPerGrid = (n + 2 * threadsPerBlock - 1) / (2 * threadsPerBlock);
 
     // Launch kernel
-    // quantize_array_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output, n);
     quantize_array_kernel<<<blocksPerGrid, threadsPerBlock>>>(d_input, d_output, n);
 
     // Copy result back to host
