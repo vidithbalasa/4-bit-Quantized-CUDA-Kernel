@@ -10,7 +10,7 @@ NVIDIA's CUDA ecosystem provides robust support for a wide range of data types a
 - **Lazy Evaluation**: To combat the inherent inefficiency of operating on quantized data, the kernel employs lazy evaluation strategies. This approach defers the expansion and computation of quantized values until absolutely necessary, reducing memory usage and computational overhead.
 - **Memory Management**: The implementation carefully manages memory to ensure that only one "full-size" 8-bit matrix is in memory at any time. This strategy optimizes both the memory footprint and computational efficiency of operations on the GPU.
 
-## The Challenge
+## Overview
 
 The CUDA programming model and the underlying C++ language do not natively support 4-bit integers. This limitation poses a significant challenge for applications that can benefit from the memory efficiency of quantized data types, such as deep learning models and high-precision arithmetic operations.
 
