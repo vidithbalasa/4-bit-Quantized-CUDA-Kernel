@@ -2,7 +2,7 @@
 
 ## Overview
 
-VRAM is expensive. But the rich people making AI keep building bigger models. Since we can't buy more GPUs, we instead make the weights smaller. Presenting the 4 bit kernel. Shrink the model, not your wallet.
+VRAM is expensive. But the rich people making AI keep building bigger models. Since we can't buy more GPUs, we make the weights smaller. Presenting the 4 bit kernel. Shrink the model, not your wallet.
 
 ## Technical Details
 
