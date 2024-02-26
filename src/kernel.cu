@@ -1,4 +1,4 @@
-#include "../include/kernel.cuh"
+#include <kernel.cuh>
 #include <iostream>
 
 __device__ int8_t quantize(int8_t a, int8_t b) {
